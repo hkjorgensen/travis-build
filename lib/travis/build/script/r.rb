@@ -143,7 +143,13 @@ module Travis
           sh.echo 'Testing with: R CMD check "${PKG_TARBALL}" ' +
                   "#{config[:r_check_args]}"
           sh.cmd "R CMD check \"${PKG_TARBALL}\" #{config[:r_check_args]}",
-                 assert: true
+                 assert: false
+          # Build fails if R CMD check fails
+          sh.if '$? -ne 0' do
+            sh.echo 'R CMD check failed, dumping logs'
+            dump_logs
+            sh.failure 'R CMD check failed'
+          end
 
           # Turn warnings into errors, if requested.
           if config[:warnings_are_errors]
@@ -170,11 +176,6 @@ module Travis
             sh.cmd "Rscript -e '#{revdep_script}'", assert: true
           end
 
-        end
-
-        def after_failure
-          dump_logs
-          super
         end
 
         private
@@ -284,6 +285,7 @@ module Travis
             '  q(status=1)',
             '});',
             'if (!all(deps %in% installed.packages())) {',
+            ' message("missing: ", paste(setdiff(deps, installed.packages()), collapse=", "));',
             ' q(status = 1, save = "no")',
             '}',
           ].join(' ')
@@ -369,9 +371,9 @@ module Travis
             sh.echo 'Installing OS X binary package for MacTeX'
             sh.cmd "sudo installer -pkg \"/tmp/#{mactex}\" -target /"
             sh.rm "/tmp/#{mactex}"
-            sh.cmd 'sudo tlmgr update --self'
-            sh.cmd 'sudo tlmgr install inconsolata upquote courier ' +
-                   'courier-scaled helvetic'
+            sh.cmd 'sudo /usr/texbin/tlmgr update --self'
+            sh.cmd 'sudo /usr/texbin/tlmgr install inconsolata upquote ' +
+                   'courier courier-scaled helvetic'
 
             sh.export 'PATH', '$PATH:/usr/texbin'
           end

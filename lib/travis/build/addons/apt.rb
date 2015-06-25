@@ -123,7 +123,7 @@ module Travis
               sh.export 'DEBIAN_FRONTEND', 'noninteractive', echo: true
               sh.cmd "sudo -E apt-get -yq update &>> ~/apt-get-update.log", echo: true, timing: true
               sh.cmd 'sudo -E apt-get -yq --no-install-suggests --no-install-recommends ' \
-                "install #{whitelisted.join(' ')}", echo: true, timing: true
+                "--force-yes install #{whitelisted.join(' ')}", echo: true, timing: true
             end
           end
 
@@ -132,11 +132,11 @@ module Travis
           end
 
           def config_sources
-            Array(config[:sources])
+            @config_sources ||= Array(config[:sources]).flatten.compact
           end
 
           def config_packages
-            Array(config[:packages])
+            @config_packages ||= Array(config[:packages]).flatten.compact
           end
 
           def package_whitelist

@@ -22,6 +22,7 @@ require 'travis/build/script/go'
 require 'travis/build/script/groovy'
 require 'travis/build/script/generic'
 require 'travis/build/script/haskell'
+require 'travis/build/script/haxe'
 require 'travis/build/script/julia'
 require 'travis/build/script/node_js'
 require 'travis/build/script/objective_c'
@@ -96,6 +97,7 @@ module Travis
           apply :fix_resolv_conf
           apply :fix_etc_hosts
           apply :put_localhost_first
+          apply :home_paths
         end
 
         def checkout

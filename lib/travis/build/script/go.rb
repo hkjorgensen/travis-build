@@ -19,6 +19,9 @@ module Travis
         def export
           super
           sh.export 'TRAVIS_GO_VERSION', go_version, echo: false
+          sh.if '-z $GOMAXPROCS' do
+            sh.export 'GOMAXPROCS', '2', echo: false
+          end
         end
 
         def prepare
@@ -41,7 +44,11 @@ module Travis
           super
           sh.cmd %Q'eval "$(gimme #{go_version})"'
 
-          sh.export 'GOPATH', "#{HOME_DIR}/gopath:", echo: true
+          # NOTE: $GOPATH is a plural ":"-separated var a la $PATH.  We export
+          # only a single path here, but users who want to treat $GOPATH as
+          # singular *should* probably use "${GOPATH%%:*}" to take the first
+          # entry.
+          sh.export 'GOPATH', "#{HOME_DIR}/gopath", echo: true
           sh.export 'PATH', "#{HOME_DIR}/gopath/bin:$PATH", echo: true
 
           sh.mkdir "#{HOME_DIR}/gopath/src/#{data.source_host}/#{data.slug}", recursive: true, assert: false, timing: false

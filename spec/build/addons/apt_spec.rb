@@ -95,7 +95,7 @@ describe Travis::Build::Addons::Apt, :sexp do
     end
 
     def apt_get_install_command(*packages)
-      "sudo -E apt-get -yq --no-install-suggests --no-install-recommends install #{packages.join(' ')}"
+      "sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install #{packages.join(' ')}"
     end
 
     context 'with multiple whitelisted packages' do
@@ -120,6 +120,12 @@ describe Travis::Build::Addons::Apt, :sexp do
       let(:config) { { packages: nil } }
 
       it { should_not include_sexp [:cmd, apt_get_install_command('git'), echo: true, timing: true] }
+    end
+
+    context 'with nested arrays of packages' do
+      let(:config) { { packages: [%w(git curl)] } }
+
+      it { should include_sexp [:cmd, apt_get_install_command('git', 'curl'), echo: true, timing: true] }
     end
   end
 

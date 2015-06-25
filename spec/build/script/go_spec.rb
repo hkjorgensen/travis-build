@@ -15,11 +15,15 @@ describe Travis::Build::Script::Go, :sexp do
   it_behaves_like 'a build script sexp'
 
   it 'sets GOPATH' do
-    should include_sexp [:export, ['GOPATH', '$HOME/gopath:'], echo: true]
+    should include_sexp [:export, ['GOPATH', '$HOME/gopath'], echo: true]
   end
 
   it 'sets TRAVIS_GO_VERSION' do
     should include_sexp [:export, ['TRAVIS_GO_VERSION', '1.4.1']]
+  end
+
+  it 'conditionally sets GOMAXPROCS to 2' do
+    expect(sexp_find(subject, [:if, '-z $GOMAXPROCS'])).to include_sexp [:export, ['GOMAXPROCS', '2']]
   end
 
   it 'sets the default go version if not :go config given' do
